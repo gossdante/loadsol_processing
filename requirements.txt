@@ -1,6 +1,3 @@
-streamlit 
-pandas
-numpy
-math
+streamlit
 scipy
 matplotlib
