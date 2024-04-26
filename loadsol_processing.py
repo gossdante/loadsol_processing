@@ -141,9 +141,8 @@ st.write('This app allows the processing of gait data collected with single sens
 st.write('')
 data_files = st.file_uploader('Upload the text file reports from loadsol', accept_multiple_files=True)
 
-# Initialize an empty DataFrame to store all summaries
-combined_summaries = pd.DataFrame()
-
+# This block of code will be used to set the parameters for the analysis
+# Each is stored in the sidebar, many of these are set to default values
 force_threshold = st.sidebar.number_input('Force Threshold (N): ', min_value=20, value=50)
 weight_kg = st.sidebar.number_input("What is the subject's weight in kilograms?",value=100)
 weight_N = weight_kg * 9.81
@@ -153,6 +152,7 @@ if normalize == 'Newtons':
     normalizer = weight_N
 else:
     normalizer = weight_kg
+sub_min = st.sidebar.toggle('Subtract Minimum Force from all data?') 
 
 # Initialize an empty DataFrame to store all summaries
 combined_summaries = pd.DataFrame()
@@ -166,10 +166,18 @@ if data_files:
 
         # Read data from the file
         data_file.seek(0)  
-        df = pd.read_csv(data_file, delimiter='\t', header = 3, index_col=0 ,usecols=[1,3])
+        df = pd.read_csv(data_file, delimiter='\t', header = 3, index_col=0 ,usecols=[0,1,3])# Added 0 on 4/26/24 to fix index
         df.index.name = 'Time (Sec)'
         df.reset_index(inplace=True)
         df.rename(columns={'Force[N]': 'LeftForce[N]','Force[N].1': 'RightForce[N]'},inplace=True)
+
+        # Add option to remove minimum
+        if sub_min:
+            df['LeftForce[N]'] = df['LeftForce[N]'] - df['LeftForce[N]'].min()
+            df['RightForce[N]'] = df['RightForce[N]'] - df['RightForce[N]'].min()
+
+
+        # Display Data
         st.write('View Raw Data')
         st.dataframe(df)
         st.line_chart(df, x ='Time (Sec)', y=df[['LeftForce[N]','RightForce[N]']], color = ["#232D4B","#E57200"])
@@ -185,6 +193,40 @@ if data_files:
         st.write(f'There were {len(right_steps)} steps recorded on the right foot.')
         st.write('---')
 
+        # Get cadence - As of 4/26 this is semi functional, need to confirm if the cadences make sense.
+        # Need to divide the number of steps by the total time where steps where recorded
+        # Total time is time from first IC to last TO on both limbs.
+        # Is left or right the first IC?
+        # def active_time_finder (left_steps, right_steps):
+        #     if (len(left_steps) > 0) & (len(right_steps) > 0):
+        #         # Define the first IC and last TO for each limb
+        #         left_first_IC = left_steps[0].index[0]
+        #         right_first_IC = right_steps[0].index[0]
+        #         left_last_TO = left_steps[-1].index[-1]
+        #         right_last_TO = right_steps[-1].index[-1]
+        #         # Check which came first and last, store to new absolute variable
+        #         if left_first_IC < right_first_IC:
+        #             abs_first_IC =  left_first_IC
+        #         else:
+        #             abs_first_IC =  right_first_IC
+        #         if left_last_TO > right_last_TO:
+        #             abs_last_TO =  left_last_TO
+        #         else:
+        #             abs_last_TO =  right_last_TO
+        #         # How much time between first and last?
+        #         total_time = df['Time (Sec)'][abs_last_TO] - df['Time (Sec)'][abs_first_IC]
+        #         return total_time
+        #     else:
+        #         return np.nan()
+        # total_time = active_time_finder(left_steps, right_steps)
+        # st.write(total_time)
+        
+
+
+        # st.write(len(left_steps)/df['Time (Sec)'].max())
+        # st.write(len(right_steps)/df['Time (Sec)'].max())
+
+        # Summarize Steps
         trial_summary = step_summarizer(left_steps, right_steps)
         st.write('All Steps')
         st.write(trial_summary)
