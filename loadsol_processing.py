@@ -24,7 +24,7 @@ def stepfinder(dataframe):
     Takes a dataframe containing Force on the left and right side.
     Searches in time from a heel strike to a toe off between .4 and 1 seconds.
     Adds all steps meeting this condition to a list by limb.
-
+d
     Returns two list of steps by limb.
     '''
     # Generate Stance Variables
@@ -164,12 +164,10 @@ if data_files:
     for data_file in data_files:
         data_file.seek(0)
 
-        # Read data from the file
-        data_file.seek(0)  
-        df = pd.read_csv(data_file, delimiter='\t', header = 3, index_col=0 ,usecols=[0,1,3])# Added 0 on 4/26/24 to fix index
-        df.index.name = 'Time (Sec)'
-        df.reset_index(inplace=True)
-        df.rename(columns={'Force[N]': 'LeftForce[N]','Force[N].1': 'RightForce[N]'},inplace=True)
+        df = pd.read_csv(data_file, delimiter='\t', header = 3,index_col=False, 
+                          usecols=['Time[secs]','Force[N]','Force[N].1'])
+        df.rename(columns={'Time[secs]':'Time (Sec)','Force[N]': 'LeftForce[N]','Force[N].1': 'RightForce[N]'},inplace=True)
+        df.set_index('Time (Sec)')
 
         # Add option to remove minimum
         if sub_min:
