@@ -24,7 +24,7 @@ def stepfinder(dataframe):
     Takes a dataframe containing Force on the left and right side.
     Searches in time from a heel strike to a toe off between .4 and 1 seconds.
     Adds all steps meeting this condition to a list by limb.
-d
+
     Returns two list of steps by limb.
     '''
     # Generate Stance Variables
@@ -78,10 +78,15 @@ def spatio_calc(df,column):
 
     grf_stats = pd.DataFrame(columns = basecols)
     contact_time = ((len(df[column]))/Sampling_Rate)
+    
     # Find Peaks (internal variable)
     peaks, _ = find_peaks(df[column], distance=(150/(1000/Sampling_Rate)), height=(0.7*weight_N))
+    
+    if len(peaks) < 2:
+        return grf_stats
     # Time to peak
     time_to_peak = ((peaks[0])/Sampling_Rate)
+    
     # Time between peaks 
     time_between_peaks = ((peaks[-1]-peaks[0])/Sampling_Rate)
     # Average Loading Rate
@@ -178,11 +183,14 @@ if data_files:
         # Display Data
         st.write('View Raw Data')
         st.dataframe(df)
+        # Remove rows with missing data
+        df = df.dropna().apply(pd.to_numeric, errors='coerce').dropna()
+        
         st.line_chart(df, x ='Time (Sec)', y=df[['LeftForce[N]','RightForce[N]']], color = ["#232D4B","#E57200"])
 
         # Get Sampling Rate 
         Sampling_Rate = 1 / df['Time (Sec)'][1]-df['Time (Sec)'][0]
-
+        
         # Isolate Steps
         left_steps, right_steps = stepfinder(df)
 
