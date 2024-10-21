@@ -266,5 +266,6 @@ else:
     st.error('Please upload the files corresponding to the trials.')
 
 
+st.write('Version Date: 10/21/2024')
 
 # There may need to be a check to make sure the data isn't zero for a prolonged period.
