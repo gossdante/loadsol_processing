@@ -186,8 +186,13 @@ if data_files:
         # Remove rows with missing data
         df = df.dropna().apply(pd.to_numeric, errors='coerce').dropna()
         
-        st.line_chart(df, x ='Time (Sec)', y=df[['LeftForce[N]','RightForce[N]']], color = ["#232D4B","#E57200"])
-
+        try:
+            st.line_chart(df, x ='Time (Sec)', y=df[['LeftForce[N]','RightForce[N]']], color = ["#232D4B","#E57200"])
+        except:
+            st.line_chart(df, x ='Time (Sec)', color = ["#232D4B","#E57200"])
+        else:
+            st.write('Graph not available')
+        
         # Get Sampling Rate 
         Sampling_Rate = 1 / df['Time (Sec)'][1]-df['Time (Sec)'][0]
         
