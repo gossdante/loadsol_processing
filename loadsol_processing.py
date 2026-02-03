@@ -108,7 +108,7 @@ def spatio_calc(df,column):
     mean_grf_norm = mean_grf/ normalizer
 
     # GRF Impulse
-    grf_impulse = np.trapz(df[column][df[column]>0], dx= (1000/Sampling_Rate)/ 1000)
+    grf_impulse = np.trapezoid(df[column][df[column]>0], dx= (1000/Sampling_Rate)/ 1000)
     # Norm GRF Impulse
     grf_impulse_norm = grf_impulse / normalizer
 
